@@ -20,7 +20,7 @@ pub struct InitializeWhitelist<'info> {
 impl<'info> InitializeWhitelist<'info> {
     pub fn initialize_whitelist(&mut self, bumps: InitializeWhitelistBumps) -> Result<()> {
         // Initialize the whitelist with an empty address vector
-        self.whitelist.set_inner(Whitelist { 
+        self.whitelist.set_inner(Whitelist {
             address: vec![],
             bump: bumps.whitelist,
         });

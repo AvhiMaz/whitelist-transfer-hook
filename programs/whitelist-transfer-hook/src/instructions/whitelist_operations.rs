@@ -1,7 +1,4 @@
-use anchor_lang::{
-    prelude::*, 
-    system_program
-};
+use anchor_lang::{prelude::*, system_program};
 
 use crate::state::whitelist::Whitelist;
 
@@ -42,7 +39,8 @@ impl<'info> WhitelistOperations<'info> {
         // Get the account info for the whitelist
         let account_info = self.whitelist.to_account_info();
 
-        if is_adding {  // Adding to whitelist
+        if is_adding {
+            // Adding to whitelist
             let new_account_size = account_info.data_len() + std::mem::size_of::<Pubkey>();
             // Calculate rent required for the new account size
             let lamports_required = (Rent::get()?).minimum_balance(new_account_size);
@@ -51,18 +49,18 @@ impl<'info> WhitelistOperations<'info> {
 
             // Perform transfer of additional rent
             let cpi_program = self.system_program.to_account_info();
-            let cpi_accounts = system_program::Transfer{
-                from: self.admin.to_account_info(), 
+            let cpi_accounts = system_program::Transfer {
+                from: self.admin.to_account_info(),
                 to: account_info.clone(),
             };
             let cpi_context = CpiContext::new(cpi_program, cpi_accounts);
-            system_program::transfer(cpi_context,rent_diff)?;
+            system_program::transfer(cpi_context, rent_diff)?;
 
             // Reallocate the account
             account_info.resize(new_account_size)?;
             msg!("Account Size Updated: {}", account_info.data_len());
-
-        } else {        // Removing from whitelist
+        } else {
+            // Removing from whitelist
             let new_account_size = account_info.data_len() - std::mem::size_of::<Pubkey>();
             // Calculate rent required for the new account size
             let lamports_required = (Rent::get()?).minimum_balance(new_account_size);
