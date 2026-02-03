@@ -4,16 +4,12 @@ use anchor_lang::prelude::*;
 use anchor_spl::{
     token_2022::spl_token_2022::{
         extension::{
-            transfer_hook::TransferHookAccount, 
-            BaseStateWithExtensionsMut, 
-            PodStateWithExtensionsMut
-        }, 
-        pod::PodAccount
-    }, 
-    token_interface::{
-        Mint, 
-        TokenAccount
-    }
+            transfer_hook::TransferHookAccount, BaseStateWithExtensionsMut,
+            PodStateWithExtensionsMut,
+        },
+        pod::PodAccount,
+    },
+    token_interface::{Mint, TokenAccount},
 };
 
 use crate::state::Whitelist;
@@ -21,7 +17,7 @@ use crate::state::Whitelist;
 #[derive(Accounts)]
 pub struct TransferHook<'info> {
     #[account(
-        token::mint = mint, 
+        token::mint = mint,
         token::authority = owner,
     )]
     pub source_token: InterfaceAccount<'info, TokenAccount>,
@@ -34,12 +30,12 @@ pub struct TransferHook<'info> {
     pub owner: UncheckedAccount<'info>,
     /// CHECK: ExtraAccountMetaList Account,
     #[account(
-        seeds = [b"extra-account-metas", mint.key().as_ref()], 
+        seeds = [b"extra-account-metas", mint.key().as_ref()],
         bump
     )]
     pub extra_account_meta_list: UncheckedAccount<'info>,
     #[account(
-        seeds = [b"whitelist"], 
+        seeds = [b"whitelist-entry", source_token.owner.key().as_ref()],
         bump = whitelist.bump,
     )]
     pub whitelist: Account<'info, Whitelist>,
@@ -49,18 +45,17 @@ impl<'info> TransferHook<'info> {
     /// This function is called when the transfer hook is executed.
     pub fn transfer_hook(&mut self, _amount: u64) -> Result<()> {
         // Fail this instruction if it is not called from within a transfer hook
-        
+
         self.check_is_transferring()?;
 
         msg!("Source token owner: {}", self.source_token.owner);
         msg!("Destination token owner: {}", self.destination_token.owner);
 
-        if self.whitelist.address.contains(&self.source_token.owner) {
+        if self.whitelist.authority == self.source_token.owner {
             msg!("Transfer allowed: The address is whitelisted");
         } else {
             panic!("TransferHook: Address is not whitelisted");
         }
-
         Ok(())
     }
 
@@ -76,17 +71,22 @@ impl<'info> TransferHook<'info> {
         // Unpack the account data as a PodStateWithExtensionsMut
         // This will allow us to access the extensions of the token account
         // We use PodStateWithExtensionsMut because TokenAccount is a POD (Plain Old Data) type
+        // PodAccount: The base structure of a Token-2022 account (POD = Plain Old Data, meaning it's just bytes with no pointers)
+        // PodStateWithExtensionsMut: A wrapper that lets you access both:
+        // The base account data (balance, mint, owner, etc.)
+        // The extensions (extra features like Transfer Hook, Interest Bearing, etc.)
+        // unpack(): Deserializes the raw bytes into a structured format
         let mut account = PodStateWithExtensionsMut::<PodAccount>::unpack(*account_data_ref)?;
         // Get the TransferHookAccount extension
         // Search for the TransferHookAccount extension in the token account
         // The returning struct has a `transferring` field that indicates if the account is in the middle of a transfer operation
         let account_extension = account.get_extension_mut::<TransferHookAccount>()?;
-    
+
         // Check if the account is in the middle of a transfer operation
         if !bool::from(account_extension.transferring) {
             panic!("TransferHook: Not transferring");
         }
-    
+
         Ok(())
     }
 }
