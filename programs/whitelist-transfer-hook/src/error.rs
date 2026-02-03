@@ -8,4 +8,6 @@ pub enum ErrorCode {
     InitializationFailed,
     #[msg("Error creating extra account meta")]
     ExtraAccountMetaError,
+    #[msg("Failed to initialize extension")]
+    ExtensionInitializationFailed,
 }

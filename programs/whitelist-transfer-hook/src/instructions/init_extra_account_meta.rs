@@ -78,8 +78,7 @@ impl<'info> InitializeExtraAccountMetaList<'info> {
         Ok(vec![
             // This tells Token-2022: "Derive a PDA with seeds [b"whitelist-entry", source_owner]"
             // The source_owner comes from the transfer instruction
-            ExtraAccountMeta::new_external_pda_with_seeds(
-                3, // Changed to 3 (owner account index)
+            ExtraAccountMeta::new_with_seeds(
                 &[
                     Seed::Literal {
                         bytes: b"whitelist-entry".to_vec(),

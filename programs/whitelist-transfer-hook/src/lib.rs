@@ -29,6 +29,10 @@ pub mod whitelist_transfer_hook {
         ctx.accounts.remove_from_whitelist(authority)
     }
 
+    pub fn init_mint(ctx: Context<TokenFactory>, decimals: u8) -> Result<()> {
+        ctx.accounts.init_mint(decimals)
+    }
+
     pub fn initialize_transfer_hook(ctx: Context<InitializeExtraAccountMetaList>) -> Result<()> {
         ctx.accounts.initialize_extra_account_meta_list(&ctx.bumps)
     }
