@@ -10,4 +10,6 @@ pub enum ErrorCode {
     ExtraAccountMetaError,
     #[msg("Failed to initialize extension")]
     ExtensionInitializationFailed,
+    #[msg("Unauthorized: Only admin can perform this action")]
+    Unauthorized,
 }

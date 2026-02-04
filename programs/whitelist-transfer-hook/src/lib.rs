@@ -18,6 +18,10 @@ declare_id!("DhzyDgCmmQzVC4vEcj2zRGUyN8Mt5JynfdGLKkBcRGaX");
 pub mod whitelist_transfer_hook {
     use super::*;
 
+    pub fn initialize_config(ctx: Context<InitializeConfig>) -> Result<()> {
+        ctx.accounts.initialize_config(&ctx.bumps)
+    }
+
     pub fn add_to_whitelist(ctx: Context<AddToWhiteList>, authority: Pubkey) -> Result<()> {
         ctx.accounts.add_to_whitelist(authority, &ctx.bumps)
     }

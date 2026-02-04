@@ -1,5 +1,7 @@
 use anchor_lang::prelude::*;
 
+use crate::error::ErrorCode;
+use crate::state::config::Config;
 use crate::state::whitelist::Whitelist;
 
 #[derive(Accounts)]
@@ -7,6 +9,12 @@ use crate::state::whitelist::Whitelist;
 pub struct AddToWhiteList<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
+    #[account(
+        seeds = [b"config"],
+        bump = config.bump,
+        constraint = config.admin == admin.key() @ ErrorCode::Unauthorized,
+    )]
+    pub config: Account<'info, Config>,
     #[account(
         init,
         payer = admin,
@@ -23,6 +31,12 @@ pub struct AddToWhiteList<'info> {
 pub struct RemoveFromWhiteList<'info> {
     #[account(mut)]
     pub admin: Signer<'info>,
+    #[account(
+        seeds = [b"config"],
+        bump = config.bump,
+        constraint = config.admin == admin.key() @ ErrorCode::Unauthorized,
+    )]
+    pub config: Account<'info, Config>,
     #[account(
         mut,
         close = admin,

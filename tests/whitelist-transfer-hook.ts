@@ -55,17 +55,38 @@ describe("whitelist-transfer-hook", () => {
       program.programId
     );
 
+  // Config PDA
+  const [configPDA] = anchor.web3.PublicKey.findProgramAddressSync(
+    [Buffer.from("config")],
+    program.programId
+  );
+
   // Per-address whitelist PDA for the wallet
   const [walletWhitelistEntry] = anchor.web3.PublicKey.findProgramAddressSync(
     [Buffer.from("whitelist-entry"), wallet.publicKey.toBuffer()],
     program.programId
   );
 
+  it("Initialize Config", async () => {
+    const tx = await program.methods
+      .initializeConfig()
+      .accountsPartial({
+        admin: wallet.publicKey,
+        config: configPDA,
+        systemProgram: SystemProgram.programId,
+      })
+      .rpc();
+
+    console.log("\nConfig initialized. Admin:", wallet.publicKey.toBase58());
+    console.log("Transaction signature:", tx);
+  });
+
   it("Add user to whitelist", async () => {
     const tx = await program.methods
       .addToWhitelist(wallet.publicKey)
       .accountsPartial({
         admin: wallet.publicKey,
+        config: configPDA,
         whitelistEntry: walletWhitelistEntry,
         systemProgram: SystemProgram.programId,
       })
@@ -80,6 +101,7 @@ describe("whitelist-transfer-hook", () => {
       .removeFromWhitelist(wallet.publicKey)
       .accountsPartial({
         admin: wallet.publicKey,
+        config: configPDA,
         whitelistEntry: walletWhitelistEntry,
         systemProgram: SystemProgram.programId,
       })
@@ -94,6 +116,7 @@ describe("whitelist-transfer-hook", () => {
       .addToWhitelist(wallet.publicKey)
       .accountsPartial({
         admin: wallet.publicKey,
+        config: configPDA,
         whitelistEntry: walletWhitelistEntry,
         systemProgram: SystemProgram.programId,
       })
